@@ -24,10 +24,10 @@ class Computer:
             raise ValueError(f"Invalid computer IP address: {self.ip_address}.")
 
     def __str__(self) -> str:
-        return f"Computer(mac_address={self.mac_address}, ip_address={self.ip_address}), ssh_port={self.ssh_port})"
+        return f"Computer(name={self.name}, mac_address={self.mac_address}, ip_address={self.ip_address}), ssh_port={self.ssh_port})"
 
     def __repr__(self) -> str:
-        return f"Computer(mac_address={self.mac_address}, ip_address={self.ip_address}), ssh_port={self.ssh_port})"
+        return f"Computer(name={self.name}, mac_address={self.mac_address}, ip_address={self.ip_address}), ssh_port={self.ssh_port})"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Computer):

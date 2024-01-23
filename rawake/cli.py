@@ -5,7 +5,7 @@ import json
 import getpass
 import logging
 
-from rawake.logging import logger
+from rawake.logging import logger, panic
 from rawake.config import Config, Computer
 from rawake.computer_controller import ComputerController
 from rawake.__version__ import __version__
@@ -27,7 +27,7 @@ def print_computers(computers: typing.Set[Computer]):
     print(json.dumps(list(computers), cls=ComputerJsonEncoder, indent=2))
 
 
-def run():
+def _run():
     parser = argparse.ArgumentParser(prog="rawake", description="Remotly awake your computers")
     parser.add_argument("--version", action="version", version="%(prog)s {version}".format(version=__version__))
     parser.add_argument("-v", "--verbose", help="verbose logging.", action="store_true")
@@ -42,17 +42,29 @@ def run():
     else:
         logger.setLevel(logging.INFO)
 
-    controller = ComputerController(Config.load())
+    try:
+        config = Config.load()
+    except Exception as e:
+        panic("Error loading configuration: " + str(e))
+    controller = ComputerController(config)
 
     if args.list:
         print_computers(controller.list_computers())
     elif args.awake:
         controller.awake_by_name(computer_name=args.awake)
     elif args.suspend:
-        print("SSH Connection:")
-        ssh_username = input("\tusername:")
-        ssh_password = getpass.getpass("\tpassword:")
+        print("SSH authentication")
+        ssh_username = input("username: ")
+        ssh_password = getpass.getpass("password: ")
         controller.suspend_by_name(computer_name=args.suspend, ssh_username=ssh_username, ssh_password=ssh_password)
     else:
         parser.print_usage()
         sys.exit(-1)
+
+
+def run():
+    try:
+        _run()
+    except KeyboardInterrupt:
+        print("")
+        sys.exit(1)

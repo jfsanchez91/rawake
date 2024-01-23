@@ -1,4 +1,5 @@
 import logging
+import sys
 
 __all__ = ["logger"]
 
@@ -32,3 +33,8 @@ ch.setFormatter(CustomFormatter())
 logger = logging.getLogger("rawake")
 logger.setLevel(logging.DEBUG)
 logger.addHandler(ch)
+
+
+def panic(msg: str) -> None:
+    logger.fatal(msg)
+    sys.exit(1)
