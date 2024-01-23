@@ -8,6 +8,7 @@ import logging
 from rawake.logging import logger
 from rawake.config import Config, Computer
 from rawake.computer_controller import ComputerController
+from rawake.__version__ import __version__
 
 
 def print_computers(computers: typing.Set[Computer]):
@@ -28,6 +29,7 @@ def print_computers(computers: typing.Set[Computer]):
 
 def run():
     parser = argparse.ArgumentParser(prog="rawake", description="Remotly awake your computers")
+    parser.add_argument("--version", action="version", version="%(prog)s {version}".format(version=__version__))
     parser.add_argument("-v", "--verbose", help="verbose logging.", action="store_true")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-a", "--awake", help="awakes a computer by it's name.")
