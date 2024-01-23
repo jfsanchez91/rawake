@@ -1,0 +1,11 @@
+[Desktop Entry]
+Comment=Remote computer awake
+Exec=rawake
+GenericName=rawake
+Icon=rawake
+Name=rawake
+StartupWMClass=rawake
+NoDisplay=false
+StartupNotify=true
+Terminal=false
+Type=Application
