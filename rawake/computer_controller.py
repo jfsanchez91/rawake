@@ -1,5 +1,6 @@
 import typing
 import wakeonlan as wol
+import subprocess
 
 from paramiko import SSHClient
 
@@ -40,6 +41,29 @@ class ComputerController:
             self.ssh_client.close()
         except Exception as e:
             panic("Can not execute SSH command: " + str(e))
+
+    def check_status_by_name(self, computer_name: str) -> bool:
+        computer = self.find_computer_by_name_or_panic(computer_name)
+        return self.check_status(computer)
+
+    def check_status(self, computer: Computer) -> bool:
+        """
+        Ping the computer to check if it is online.
+        Returns True if online (responds to ping), False otherwise.
+        """
+        logger.info(f"Checking status for: {computer}")
+        try:
+            # -c 1: count 1 packet
+            # -W 2: timeout 2 seconds
+            command = ["ping", "-c", "1", "-W", "2", computer.ip_address]
+            result = subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            is_online = result.returncode == 0
+            status_str = "Online" if is_online else "Offline"
+            logger.info(f"Computer {computer.name} is {status_str}")
+            return is_online
+        except Exception as e:
+            logger.error(f"Error pinging computer {computer.name}: {e}")
+            return False
 
     def find_computer_by_name_or_panic(self, name: str) -> Computer:
         try:

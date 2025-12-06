@@ -1,4 +1,5 @@
 import pytest
+import subprocess
 from unittest.mock import MagicMock, patch
 from rawake.computer_controller import ComputerController
 from rawake.config import Config, Computer
@@ -43,3 +44,29 @@ def test_suspend(mock_ssh_class, mock_config, sample_computer):
     mock_ssh.exec_command.assert_called_once_with(sample_computer.ssh_suspend_command)
     # Check closure
     mock_ssh.close.assert_called_once()
+
+@patch("rawake.computer_controller.subprocess.run")
+def test_check_status_online(mock_run, mock_config, sample_computer):
+    mock_run.return_value = MagicMock(returncode=0)
+    
+    controller = ComputerController(mock_config)
+    assert controller.check_status_by_name("test-pc") is True
+    
+    mock_run.assert_called_once_with(
+        ["ping", "-c", "1", "-W", "2", sample_computer.ip_address],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
+
+@patch("rawake.computer_controller.subprocess.run")
+def test_check_status_offline(mock_run, mock_config, sample_computer):
+    mock_run.return_value = MagicMock(returncode=1)
+    
+    controller = ComputerController(mock_config)
+    assert controller.check_status_by_name("test-pc") is False
+
+@patch("rawake.computer_controller.subprocess.run")
+def test_check_status_exception(mock_run, mock_config, sample_computer):
+    mock_run.side_effect = Exception("Ping failed")
+    
+    controller = ComputerController(mock_config)
+    assert controller.check_status_by_name("test-pc") is False

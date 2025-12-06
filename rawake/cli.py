@@ -34,6 +34,7 @@ def _run():
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-a", "--awake", help="awakes a computer by it's name.")
     group.add_argument("-s", "--suspend", help="suspends a computer by it's name.")
+    group.add_argument("--status", help="check if a computer is online by it's name.")
     group.add_argument("-l", "--list", help="list configured computers.", action="store_true")
 
     args = parser.parse_args()
@@ -52,6 +53,9 @@ def _run():
         print_computers(controller.list_computers())
     elif args.awake:
         controller.awake_by_name(computer_name=args.awake)
+    elif args.status:
+        is_online = controller.check_status_by_name(computer_name=args.status)
+        print("Online" if is_online else "Offline")
     elif args.suspend:
         print("SSH authentication")
         ssh_username = input("username: ")
