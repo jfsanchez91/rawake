@@ -6,8 +6,7 @@ from rawake.logging import logger
 
 
 class Computer:
-    MAC_ADDRESS_REGEX = re.compile("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$")
-    IP_ADDRESS_REGEX = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+    MAC_ADDRESS_REGEX = re.compile(r"[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\1[0-9a-f]{2}){4}$")
 
     def __init__(self, name: str, mac_address: str, ip_address: str, ssh_suspend_command: str, ssh_port: int = 22) -> None:
         self.name = name
@@ -20,7 +19,11 @@ class Computer:
     def validate(self):
         if Computer.MAC_ADDRESS_REGEX.fullmatch(self.mac_address) is None:
             raise ValueError(f"Invalid computer MAC address: {self.mac_address}.")
-        if Computer.IP_ADDRESS_REGEX.fullmatch(self.ip_address) is None:
+        
+        try:
+            import ipaddress
+            ipaddress.ip_address(self.ip_address)
+        except ValueError:
             raise ValueError(f"Invalid computer IP address: {self.ip_address}.")
 
     def __str__(self) -> str:
