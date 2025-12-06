@@ -1,8 +1,7 @@
 import typing
 import wakeonlan as wol
 import subprocess
-
-from paramiko import SSHClient
+import paramiko
 
 from rawake.logging import logger, panic
 from rawake.config import Config, Computer
@@ -11,7 +10,7 @@ from rawake.config import Config, Computer
 class ComputerController:
     def __init__(self, config: Config):
         self.config = config
-        self.ssh_client = SSHClient()
+        self.ssh_client = paramiko.SSHClient()
         self.ssh_client.load_system_host_keys()
 
     def awake_by_name(self, computer_name: str) -> None:
@@ -23,11 +22,11 @@ class ComputerController:
         wol.send_magic_packet(computer.mac_address)
         logger.debug(f"Wake-On-Lan magic packet sent to MAC address {computer.mac_address}")
 
-    def suspend_by_name(self, computer_name: str, ssh_username: str, ssh_password: str) -> None:
+    def suspend_by_name(self, computer_name: str, ssh_username: str, ssh_password: str = None) -> None:
         computer = self.find_computer_by_name_or_panic(computer_name)
         return self.suspend(computer, ssh_username, ssh_password)
 
-    def suspend(self, computer: Computer, ssh_username: str, ssh_password: str) -> None:
+    def suspend(self, computer: Computer, ssh_username: str, ssh_password: str = None) -> None:
         logger.info(f"Suspending computer: {computer}")
         try:
             logger.debug(f"Connecting to ssh://{computer.ip_address}:{computer.ssh_port}")
@@ -39,6 +38,8 @@ class ComputerController:
             stderr.close()
             logger.debug(f"Closing SSH connection")
             self.ssh_client.close()
+        except paramiko.AuthenticationException:
+            raise
         except Exception as e:
             panic("Can not execute SSH command: " + str(e))
 

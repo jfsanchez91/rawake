@@ -4,6 +4,7 @@ import typing
 import json
 import getpass
 import logging
+import paramiko
 
 from rawake.logging import logger, panic
 from rawake.config import Config, Computer
@@ -59,8 +60,12 @@ def _run():
     elif args.suspend:
         print("SSH authentication")
         ssh_username = input("username: ")
-        ssh_password = getpass.getpass("password: ")
-        controller.suspend_by_name(computer_name=args.suspend, ssh_username=ssh_username, ssh_password=ssh_password)
+        try:
+            controller.suspend_by_name(computer_name=args.suspend, ssh_username=ssh_username)
+        except paramiko.AuthenticationException:
+            print("SSH public key authentication failed.")
+            ssh_password = getpass.getpass("password: ")
+            controller.suspend_by_name(computer_name=args.suspend, ssh_username=ssh_username, ssh_password=ssh_password)
     else:
         parser.print_usage()
         sys.exit(-1)

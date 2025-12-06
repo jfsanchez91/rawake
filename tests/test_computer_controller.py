@@ -30,7 +30,7 @@ def test_awake(mock_wol, mock_config, sample_computer):
     
     mock_wol.send_magic_packet.assert_called_once_with(sample_computer.mac_address)
 
-@patch("rawake.computer_controller.SSHClient")
+@patch("rawake.computer_controller.paramiko.SSHClient")
 def test_suspend(mock_ssh_class, mock_config, sample_computer):
     mock_ssh = mock_ssh_class.return_value
     mock_ssh.exec_command.return_value = (MagicMock(), MagicMock(), MagicMock())
@@ -44,6 +44,28 @@ def test_suspend(mock_ssh_class, mock_config, sample_computer):
     mock_ssh.exec_command.assert_called_once_with(sample_computer.ssh_suspend_command)
     # Check closure
     mock_ssh.close.assert_called_once()
+
+@patch("rawake.computer_controller.paramiko.SSHClient")
+def test_suspend_no_password(mock_ssh_class, mock_config, sample_computer):
+    mock_ssh = mock_ssh_class.return_value
+    mock_ssh.exec_command.return_value = (MagicMock(), MagicMock(), MagicMock())
+    
+    controller = ComputerController(mock_config)
+    controller.suspend_by_name("test-pc", "user") # No password
+    
+    # Check connection calls with password=None
+    mock_ssh.connect.assert_called_once_with(sample_computer.ip_address, sample_computer.ssh_port, username="user", password=None)
+
+@patch("rawake.computer_controller.paramiko.SSHClient")
+def test_suspend_auth_failure(mock_ssh_class, mock_config, sample_computer):
+    import paramiko
+    mock_ssh = mock_ssh_class.return_value
+    mock_ssh.connect.side_effect = paramiko.AuthenticationException("Auth failed")
+    
+    controller = ComputerController(mock_config)
+    
+    with pytest.raises(paramiko.AuthenticationException):
+        controller.suspend_by_name("test-pc", "user")
 
 @patch("rawake.computer_controller.subprocess.run")
 def test_check_status_online(mock_run, mock_config, sample_computer):
