@@ -2,7 +2,7 @@
 
 ## Installation
 ```bash
-$ pip install -U rawake # install latest version
+$ uv pip install -U rawake # install latest version
 $ rawake --version # verify installation
 ```
 
@@ -75,23 +75,22 @@ rawake --awake remote-server
 
 ### Python dev environment:
 
-- Create new Python virtual environment:
+- Install [uv](https://github.com/astral-sh/uv).
+
+- Create virtual environment and install dependencies:
   ```bash
-  pyenv virtualenv 3.11 rawake
+  uv sync --all-extras
   ```
 - Activate the virtualenv:
   ```bash
-  pyenv activate rawake
+  source .venv/bin/activate
   ```
 
-- Install dev and test dependencies:
-    - `pip install .[dev]`
-    - `pip install .[test]`
 - Install git pre-commit hooks
     - `pre-commit install`
     - `pre-commit autoupdate`
 
 ### Running the tests:
   ```bash
-  pytest .
+  uv run pytest
   ```
